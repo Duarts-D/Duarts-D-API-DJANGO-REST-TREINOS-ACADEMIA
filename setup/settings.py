@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Django rest_framework
     'rest_framework',
+    #Apps
+    'apps.usuarios',
 ]
 
 MIDDLEWARE = [

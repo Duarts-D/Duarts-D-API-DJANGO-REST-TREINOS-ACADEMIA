@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from collections import defaultdict
+from apps.usuarios.validators.validator_serializer import senha_forte
 
 
 class UserCadastroSerializer(serializers.ModelSerializer):
@@ -37,9 +38,15 @@ class UserCadastroSerializer(serializers.ModelSerializer):
         if email_existe:
             _my_errors['email'].append(_('Este email ja foi utilizado'))
         
+        if not senha_forte(senha):
+            _my_errors['password'].append(_('A senha deve ter pelo menos uma letra maiúscula, '
+                                            'uma letra minúscula e um número. O comprimento deve ser '
+                                            'pelo menos 8 caracteres.'))
+
         if senha != senha_2:
             _my_errors['password'].append(_('As senhas não coincidem'))
             _my_errors['repeat_password'].append(_('As senhas não coincidem'))
+        
         if _my_errors:
             raise serializers.ValidationError(_my_errors)
         return data

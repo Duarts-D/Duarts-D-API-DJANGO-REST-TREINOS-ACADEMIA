@@ -90,7 +90,7 @@ class UserCadastroSerializerTest(CadastroMixin,APITestCase):
     def test_serializer_messages_erros_personalizada_para_os_campo_password_e_repeat_password_sao_diferentes(self):
         self.cadastro_usuario()
         dados = self.dados
-        dados.update({'password':'user12345678'})
+        dados.update({'password':'User12345678'})
         serializer = self.serializador(dados)
         error_msg = serializer.errors
         
@@ -113,3 +113,15 @@ class UserCadastroSerializerTest(CadastroMixin,APITestCase):
         serializer.create(serializer.validated_data)
         usuario_cadastrado = User.objects.get(id=1)
         self.assertTrue(usuario_cadastrado.check_password(senha))
+
+    def test_serialzier_message_erros_personalizada_para_password_formato_incorreto(self):
+        dados = self.dados
+        dados.update({'password':'user12345',
+                      'repeat_password':'user12345'})
+        
+        serializer = self.serializador(dados)
+        error_msg = serializer.errors['password'][0]
+        msg = 'A Senha Deve Ter Pelo Menos Uma Letra Maiúscula, Uma Letra Minúscula E Um Número. O Comprimento Deve Ser Pelo Menos 8 Caracteres.'
+        
+        self.assertEqual(error_msg.title(),msg)
+        self.assertEqual(error_msg.code,'invalid')

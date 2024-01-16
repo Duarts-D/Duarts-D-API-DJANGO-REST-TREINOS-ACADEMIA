@@ -7,7 +7,7 @@ from test_cadastro_base import CadastroMixin
 class CadastroViewsetTest(CadastroMixin,APITestCase):
     def setUp(self):
         self.url_cadastro = reverse('Cadastro-list')
-    
+
     def test_cadastroviewset_methodo_get_retorna_codigo_405(self):
         resposta = self.client.get(self.url_cadastro)
         self.assertEqual(resposta.status_code,HTTP_405_METHOD_NOT_ALLOWED)
@@ -75,3 +75,22 @@ class CadastroViewsetTest(CadastroMixin,APITestCase):
             'repeat_password':['Este campo é obrigatório.']
         }
         self.assertEqual(resposta.data,campos)
+    
+    def test_cadastroviewset_methodo_post_senha_formato_incorreto_retorna_error_400_e_msg_explicativa(self):
+        dados = self.dados_usuario()
+        dados.update({'password':'user123456',
+                      'repeat_password':'user123456'})
+        resposta = self.client.post(self.url_cadastro,data=dados)
+        error = resposta.data['password'][0].title()
+        msg ='A Senha Deve Ter Pelo Menos Uma Letra Maiúscula, Uma Letra Minúscula E Um Número. O Comprimento Deve Ser Pelo Menos 8 Caracteres.'
+        self.assertEqual(resposta.status_code,HTTP_400_BAD_REQUEST)
+        self.assertEqual(error,msg)
+
+    def test_cadastroviewset_methodo_post_senha_formato_correto_retorna_codigo_201_e_campos_retornado_username_first_name_last_name_email(self):
+        dados = self.dados_usuario()
+        resposta = self.client.post(self.url_cadastro,data=dados)
+        retorno = resposta.data
+        print(retorno)
+        campos = [{'username': 'TestUser', 'first_name': 'User', 'last_name': 'Teste', 'email': 'user@email.com'}]
+        self.assertEqual(resposta.status_code,HTTP_201_CREATED)
+        self.assertIn(retorno,campos)

@@ -2,18 +2,12 @@ from rest_framework.test import APITestCase
 from apps.usuarios.serializer import UserCadastroSerializer
 from parameterized import parameterized
 from django.contrib.auth.models import User
+from test_cadastro_base import CadastroMixin
 
-class UserCadastroSerializerTest(APITestCase):
+class UserCadastroSerializerTest(CadastroMixin,APITestCase):
     def setUp(self):
-        self.dados = {
-            'username':'TestUser',
-            'first_name':'User',
-            'last_name':'Teste',
-            'email':'user@email.com',
-            'password':'userTest123',
-            'repeat_password':'userTest123'
-        }
-    
+        self.dados = self.dados_usuario()
+
     def serializador(self,dados):
         serializador = UserCadastroSerializer(data=dados)
         serializador.is_valid()
@@ -30,11 +24,6 @@ class UserCadastroSerializerTest(APITestCase):
             ('repeat_password'),
             ]
         return campos
-    
-    def cadastro_usuario(self):
-        dados = self.dados.copy()
-        dados.pop('repeat_password')
-        User.objects.create(**dados)
 
     def test_serializer_validacoes_e_verdadeira(self):
         dados = self.dados

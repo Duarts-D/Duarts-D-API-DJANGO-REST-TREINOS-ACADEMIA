@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from django.contrib.auth.models import User
 
 class EquipamentoModel(models.Model):
     equipamento = models.CharField(max_length=255,verbose_name=_('Equipamento'))
@@ -44,3 +44,27 @@ class VideoModel(models.Model):
     class Meta:
         verbose_name = _('Video')
         verbose_name_plural = _('Videos')
+
+class TreinoModel(models.Model):
+    usuario = models.ForeignKey(User,on_delete=models.CASCADE)
+    treino_nome = models.CharField(max_length=40,verbose_name=_('Treino'))
+
+    def __str__(self):
+        return self.treino_nome 
+
+    class Meta:
+        verbose_name = _('Treino')
+        verbose_name_plural = _('Treinos')
+
+class TreinoVideosmodel(models.Model):
+    usuario = models.ForeignKey(User,on_delete=models.CASCADE)
+    treino = models.ForeignKey(TreinoModel,on_delete=models.CASCADE)
+    videos = models.ManyToManyField(VideoModel)
+    ordem = models.CharField(max_length=200,default=None,null=True)
+
+    def __str__(self):
+        return self.treino.treino_nome
+    
+    class Meta:
+        verbose_name = _('Treino Video')
+        verbose_name_plural = _('Treinos Videos')

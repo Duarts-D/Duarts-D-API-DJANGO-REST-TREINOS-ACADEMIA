@@ -12,7 +12,9 @@ class CadastroMixin:
         }
         return dados
     
-    def cadastro_usuario(self):
+    def cadastro_usuario(self,username='TestUser'):
         dados = self.dados_usuario()
+        dados['username'] = username
         dados.pop('repeat_password')
-        User.objects.create(**dados)
+        user = User.objects.create(**dados)
+        return user

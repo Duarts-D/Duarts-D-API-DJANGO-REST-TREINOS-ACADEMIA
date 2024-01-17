@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import VideoModel,GrupoMuscularModel,EquipamentoModel
+from .models import (VideoModel,GrupoMuscularModel,EquipamentoModel,
+                    TreinoModel, TreinoVideosmodel)
+
 
 
 LIST_PAGE = 10
@@ -20,3 +22,14 @@ class GrupoMuscularAdminModel(admin.ModelAdmin):
 class EquipamentoModelAdmin(admin.ModelAdmin):
     list_display = ['id','grupo_muscular',]
     list_per_page = LIST_PAGE
+
+@admin.register(TreinoModel)
+class TreinoModelAdmin(admin.ModelAdmin):
+    list_display = ['treino_nome',]
+    list_per_page = LIST_PAGE
+
+@admin.register(TreinoVideosmodel)
+class TreinoVideoModelAdmin(admin.ModelAdmin):
+    list_display = ['usuario','treino']
+    list_per_page = LIST_PAGE
+    

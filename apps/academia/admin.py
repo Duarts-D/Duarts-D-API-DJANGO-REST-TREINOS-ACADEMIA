@@ -25,11 +25,11 @@ class EquipamentoModelAdmin(admin.ModelAdmin):
 
 @admin.register(TreinoModel)
 class TreinoModelAdmin(admin.ModelAdmin):
-    list_display = ['treino_nome',]
+    list_display = ['id','treino_nome',]
     list_per_page = LIST_PAGE
 
 @admin.register(TreinoVideosmodel)
 class TreinoVideoModelAdmin(admin.ModelAdmin):
-    list_display = ['usuario','treino']
+    list_display = ['id','usuario','treino']
     list_per_page = LIST_PAGE
     

@@ -90,7 +90,6 @@ class CadastroViewsetTest(CadastroMixin,APITestCase):
         dados = self.dados_usuario()
         resposta = self.client.post(self.url_cadastro,data=dados)
         retorno = resposta.data
-        print(retorno)
         campos = [{'username': 'TestUser', 'first_name': 'User', 'last_name': 'Teste', 'email': 'user@email.com'}]
         self.assertEqual(resposta.status_code,HTTP_201_CREATED)
         self.assertIn(retorno,campos)

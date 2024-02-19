@@ -19,13 +19,15 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from apps.usuarios.views import CadastroViewSet
-from apps.academia.views import TreinoModelViewset
+from apps.usuarios import views as view_usuario
+from apps.academia import views as view_academia
 
 
 router = routers.DefaultRouter()
-router.register('cadastro',CadastroViewSet,basename='Cadastro')
-router.register('treinos',TreinoModelViewset,basename='treino-listas')
+router.register('cadastro',view_usuario.CadastroViewSet,basename='Cadastro')
+router.register('treinos',view_academia.TreinoCRUDViewset,basename='treino-listas')
+router.register('videos-treinos-lista',view_academia.TreinoVideoslistaViewSet,basename='treino-videos-listas')
+router.register('videos-treinos',view_academia.TreinoVideosCUDViewSet,basename='treino-videos')
 
 
 urlpatterns = [

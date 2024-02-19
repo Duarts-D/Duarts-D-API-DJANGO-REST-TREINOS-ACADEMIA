@@ -50,21 +50,25 @@ class TreinoModel(models.Model):
     treino_nome = models.CharField(max_length=40,verbose_name=_('Treino'))
 
     def __str__(self):
-        return self.treino_nome 
+        return str(self.treino_nome)
 
     class Meta:
         verbose_name = _('Treino')
         verbose_name_plural = _('Treinos')
+        unique_together = ['usuario','treino_nome']
+
 
 class TreinoVideosmodel(models.Model):
     usuario = models.ForeignKey(User,on_delete=models.CASCADE)
     treino = models.ForeignKey(TreinoModel,on_delete=models.CASCADE)
     videos = models.ManyToManyField(VideoModel)
-    ordem = models.CharField(max_length=200,default=None,null=True)
+    ordem = models.CharField(max_length=200,default=None,null=True,blank=True)
 
     def __str__(self):
-        return self.treino.treino_nome
+        return str(self.treino)
     
     class Meta:
         verbose_name = _('Treino Video')
         verbose_name_plural = _('Treinos Videos')
+        unique_together = ['usuario','treino']
+    

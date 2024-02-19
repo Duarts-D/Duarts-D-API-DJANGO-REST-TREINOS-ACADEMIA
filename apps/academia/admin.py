@@ -25,7 +25,7 @@ class EquipamentoModelAdmin(admin.ModelAdmin):
 
 @admin.register(TreinoModel)
 class TreinoModelAdmin(admin.ModelAdmin):
-    list_display = ['id','treino_nome',]
+    list_display = ['id','treino_nome','usuario']
     list_per_page = LIST_PAGE
 
 @admin.register(TreinoVideosmodel)

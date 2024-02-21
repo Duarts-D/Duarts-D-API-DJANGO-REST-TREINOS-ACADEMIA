@@ -93,7 +93,7 @@ class TreinoVideosSerializerPostTest(GeradoresBaseMixin,APITestCase):
         serializer_model = serializer.Meta.model
         self.assertEqual(serializer_model,TreinoVideosmodel)
 
-    def test_treino_videos_serialzierPost_campos_necessario(self):
+    def test_treino_videos_serializerPost_campos_necessario(self):
         serializer = TreinoVideosSerializerPost()
         campos = set(serializer.fields.keys())
         campos_necessario = {'ordem', 'id', 'treino', 'videos'}

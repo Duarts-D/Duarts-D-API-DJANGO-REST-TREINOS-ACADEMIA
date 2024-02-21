@@ -46,7 +46,7 @@ class TreinoVideosSerializer(serializers.ModelSerializer):
 
 
 class TreinoVideosSerializerPost(serializers.ModelSerializer):
-    videos = serializers.PrimaryKeyRelatedField(queryset=VideoModel.objects.all(),required=False,many=True)
+    videos = serializers.PrimaryKeyRelatedField(queryset=VideoModel.objects.get_publicado(),required=False,many=True)
     class Meta:
         model = TreinoVideosmodel
         fields = ['id','treino','videos','ordem']

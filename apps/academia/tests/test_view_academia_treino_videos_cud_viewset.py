@@ -5,7 +5,6 @@ from rest_framework.status import (HTTP_405_METHOD_NOT_ALLOWED,HTTP_400_BAD_REQU
 from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
 from django.urls import reverse
 from collections import OrderedDict
-from apps.academia.models import TreinoModel
 
 class FixtureTreinoVideos(GeradoresBaseMixin):
     def criarTreinosVideos(self,usuario):
@@ -44,7 +43,7 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
     def test_treino_videos_cud_viewset_patch_permitido_retorna_codigo_200(self):
         # Testando metodo patch permitido
         _,treino_video = self.criarTreinosVideos(usuario=self.usuario)
-        video = self.criar_video() 
+        video = self.criar_video(publicado=True) 
         resposta = self.client.patch(f'{self.url}{treino_video.id}/',data={'videos':video.id})
         self.assertEqual(resposta.status_code , HTTP_200_OK)
 
@@ -70,7 +69,7 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         # Criando um treino vinculado ao usuario authenticado
         treino = self.criar_treino(usuario=self.usuario)
         # Criando um video
-        video = self.criar_video()
+        video = self.criar_video(publicado=True)
         ordem = '1' 
         # Reposta de criacao do metodo post
         resposta = self.client.post(self.url,data={'treino':treino.id,
@@ -142,7 +141,7 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         self.assertEqual(resposta.status_code,HTTP_404_NOT_FOUND)
 
     def test_treino_videos_cud_viewset_metodo_patch_somente_vinculado_ao_usuario_codigo_200(self):
-        video = self.criar_video()
+        video = self.criar_video(publicado=True)
         # Cliente autenticado
         _ , treino_video_usuario = self.criarTreinosVideos(self.usuario)
         # Cliente 2
@@ -154,7 +153,7 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         self.assertNotEqual(treino_video_usuario.id,treino_video_novo_usuario.id)
 
     def test_treino_videos_cud_viewset_metodo_patch_nao_vinculado_ao_usuario_retorna_codigo_404(self):
-        video = self.criar_video()
+        video = self.criar_video(publicado=True)
         # Cliente autenticado criando treino videos
         self.criarTreinosVideos(self.usuario)
         # Cliente 2
@@ -165,7 +164,7 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         self.assertEqual(resposta.status_code,HTTP_404_NOT_FOUND)
 
     def test_treino_videos_cud_viewset_metodo_patch_retorna_campos_id_usuario_treino_treino_id_videos_ordem(self):
-        video = self.criar_video()
+        video = self.criar_video(publicado=True)
         # Cliente authenticado criando treino videos
         treino , treino_video = self.criarTreinosVideos(usuario=self.usuario)
         resposta = self.client.patch(f'{self.url}{treino_video.id}/',data={'videos':video.id})
@@ -180,7 +179,7 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         self.assertEqual(resposta.data['ordem'],None)
 
     def test_treino_videos_cud_viewset_metodo_patch_retorna_campos_videos_permitidos(self):
-        video = self.criar_video()
+        video = self.criar_video(publicado=True)
         # Cliente authenticado criando treino videos
         treino , treino_video = self.criarTreinosVideos(usuario=self.usuario)
         resposta = self.client.patch(f'{self.url}{treino_video.id}/',data={'videos':video.id})
@@ -211,3 +210,30 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         # Reposta id usuario vinculado
         resposta = self.client.delete(f'{self.url}{treino_video.id}/')
         self.assertEqual(resposta.status_code,HTTP_204_NO_CONTENT)
+
+    def test_treino_videos_cud_viewset_view_utilizar_get_publicado(self):
+        # Videos 
+        video_publicado_false = self.criar_video(publicado=False)
+        video_publicado_true = self.criar_video(publicado=True)
+        # Treino id
+        treino  = self.criar_treino(usuario=self.usuario)
+
+        dados_video_true = {
+                            'treino':treino.id,
+                            'videos':[video_publicado_true.pk],
+                        }
+        
+        dados_video_False = {
+            'treino':treino.id,
+            'videos':[video_publicado_false.pk],
+        }
+        # Reposta videos publicado
+        resposta_post_publicado = self.client.post(self.url,data=dados_video_true)
+        
+        self.assertEqual(resposta_post_publicado.status_code,HTTP_201_CREATED)
+        
+        # Reposta videos nao publicado
+        resposta_post_nao_publicado = self.client.post(self.url,data=dados_video_False)
+        
+        self.assertEqual(resposta_post_nao_publicado.status_code,HTTP_400_BAD_REQUEST)
+    

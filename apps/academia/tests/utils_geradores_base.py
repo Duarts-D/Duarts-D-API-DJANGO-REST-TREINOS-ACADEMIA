@@ -30,7 +30,8 @@ class GeradoresBaseMixin(CadastroMixin):
                video_nome='Video Teste',
                video_id_youtube='iey118',
                grupo_muscular = 'Muscular',
-               equipamento = 'Equipamento'
+               equipamento = 'Equipamento',
+               publicado = False
                ):
         """
         Cria uma nova instância do modelo VideoModel.
@@ -46,7 +47,8 @@ class GeradoresBaseMixin(CadastroMixin):
             video_nome = video_nome,
             video_id_youtube=video_id_youtube,
             grupo_muscular = self.criar_grupo_muscular(nome=grupo_muscular),
-            equipamento = self.criar_equipamento(nome=equipamento)
+            equipamento = self.criar_equipamento(nome=equipamento),
+            publicado=publicado
         )
     
     def criar_treino(self,treino='Treino',usuario=None):

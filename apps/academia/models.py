@@ -2,6 +2,12 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 
+class VideoManage(models.Manager):
+    def get_publicado(self):
+        return self.filter(
+            publicado=True
+        )
+
 class EquipamentoModel(models.Model):
     equipamento = models.CharField(max_length=255,verbose_name=_('Equipamento'))
 
@@ -23,6 +29,7 @@ class GrupoMuscularModel(models.Model):
         verbose_name_plural = _('Grupos Musculares')
 
 class VideoModel(models.Model):
+    objects = VideoManage()
     video_nome = models.CharField(max_length=255,verbose_name=_('Exercicio'))
     video_id_youtube = models.CharField(max_length=255,verbose_name=_('Video id'))
     video_url = models.CharField(max_length=100,blank=True,null=True,verbose_name=_("video_url"))
@@ -31,6 +38,7 @@ class VideoModel(models.Model):
     video_id_didatico = models.CharField(max_length=50,blank=True,null=True,verbose_name=_('Video id didatico'))
     grupo_muscular = models.ForeignKey(GrupoMuscularModel,on_delete=models.SET_NULL,null=True,verbose_name=_('Grupo Muscular'))
     equipamento = models.ForeignKey(EquipamentoModel,on_delete=models.SET_NULL,null=True,verbose_name=_('Equipamento'))
+    publicado = models.BooleanField(default=False,verbose_name=_('Publicado'))
     
     def save(self,*args,**kwargs):
         if len(self.video_id_youtube) > 2:

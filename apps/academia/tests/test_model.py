@@ -7,7 +7,13 @@ from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
 from pytest import raises
 from django.db import IntegrityError
 
-class VideoModelTest(TestCase):
+def criar_grupo_e_equipamento():
+    grupo_muscular = GrupoMuscularModel.objects.create(grupo_muscular='Grupo teste')
+    equipamento = EquipamentoModel.objects.create(equipamento='Aparelho teste')
+    return grupo_muscular,equipamento
+
+
+class VideoModelTest(GeradoresBaseMixin,TestCase):
     def test_videomodel_esta_salvando_url_corretamente_com_os_parametro_inicial_do_youtube(self):
         video_id_youtube = 'abc54brca1'
         video = VideoModel.objects.create(
@@ -19,8 +25,7 @@ class VideoModelTest(TestCase):
         self.assertEqual(video_salvo.video_url,esperado)
 
     def test_videomodel_integracao_ForeignKey_grupo_muscular_e_equipamento(self):
-        grupo_muscular = GrupoMuscularModel.objects.create(grupo_muscular='Grupo teste')
-        equipamento = EquipamentoModel.objects.create(equipamento='Aparelho teste')
+        grupo_muscular, equipamento = criar_grupo_e_equipamento()
 
         video = VideoModel.objects.create(
             video_nome = 'Video teste',
@@ -34,6 +39,40 @@ class VideoModelTest(TestCase):
 
         self.assertEqual(resposta.grupo_muscular,grupo_muscular)
         self.assertEqual(resposta.equipamento,equipamento)
+
+    def test_videomodel_publicado_esta_default_como_false(self):
+        grupo_muscular, equipamento = criar_grupo_e_equipamento()
+        video = VideoModel.objects.create(
+               video_nome='Video Teste',
+               video_id_youtube='iey118',
+               grupo_muscular = grupo_muscular,
+               equipamento = equipamento,
+               )
+        # Reposta
+        # verifica se retorna de publicado esta como false
+        self.assertFalse(video.publicado)
+
+    def test_videomodel_videomanage_retorna_videos_publicado_igual_true(self):
+        videos_nao_pulicados = self.criar_videos_multiplicos(qtd=3)
+
+        grupo_muscular, equipamento = criar_grupo_e_equipamento()
+        video_publicado = VideoModel.objects.create(
+               video_nome='Video Teste',
+               video_id_youtube='iey118',
+               grupo_muscular = grupo_muscular,
+               equipamento = equipamento,
+               publicado = True
+               )
+
+        # Videomanage
+        videos_manage = VideoModel.objects.get_publicado()
+        # Resposta
+        # Video publicado esta no resultado 
+        self.assertIn(video_publicado,videos_manage)
+        # Video nao publicado nao esta no resultado
+        self.assertNotIn(videos_nao_pulicados,videos_manage)
+
+
 
 class TreinoModelTest(CadastroMixin,TestCase):
     def test_treino_model_integridade_de_forekey(self):

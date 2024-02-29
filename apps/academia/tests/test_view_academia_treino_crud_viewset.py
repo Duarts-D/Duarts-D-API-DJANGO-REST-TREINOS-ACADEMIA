@@ -30,8 +30,18 @@ class TreinoCRUDViewSetTest(GeradoresBaseMixin,APITestCase):
 
 
     def test_treinocrud_viewset_patch_retorna_codigo_200(self):
-        resposta = self.client.patch(f'{self.url}1/')
+        resposta = self.client.patch(f'{self.url}1/',data={'treino_nome':'treino'})
         self.assertEqual(resposta.status_code , HTTP_200_OK)
+
+    def test_treinocrud_viewset_patch_treino_nome_obrigatorio_status_400(self):
+        resposta = self.client.patch(f'{self.url}1/')
+        self.assertEqual(resposta.status_code,HTTP_400_BAD_REQUEST)
+        resposta_error = resposta.data['treino_nome']
+        esperado_error =  'Este campo é obrigatório.'
+        self.assertEqual(str(resposta_error),esperado_error)
+        self.assertEqual(resposta_error.code,'invalid')
+
+    
 
     def test_treinocrud_viewset_delete_retorna_204(self):
         resposta = self.client.delete(self.url+'1/')
@@ -105,3 +115,17 @@ class TreinoCRUDViewSetTest(GeradoresBaseMixin,APITestCase):
         self.criar_treino()
         resposta = self.client.delete(self.url+'3/')
         self.assertEqual(resposta.status_code,HTTP_404_NOT_FOUND)
+
+    def test_treinomodeviewset_patch_error_nome_treino_ja_criado(self):
+        treino = 'treinos_x'
+        resposta = self.client.post(self.url,data={'treino_nome':treino})
+        self.assertEqual(resposta.status_code,HTTP_201_CREATED)
+
+        # Resposta criacao repetida
+        resposta_2 = self.client.post(self.url,data={'treino_nome':treino})
+        self.assertEqual(resposta_2.status_code, HTTP_400_BAD_REQUEST)
+        print(resposta_2.data)
+        resposta_2_error = resposta_2.data['treino_nome']
+        esperado_error = f'Treino existente {treino}.'
+        self.assertEqual(str(resposta_2_error), esperado_error)
+        self.assertEqual(resposta_2_error.code, 'invalid')

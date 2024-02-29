@@ -3,7 +3,6 @@ from apps.academia.models import TreinoModel,TreinoVideosmodel,VideoModel,Treino
 from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import ValidationError
 
-
 class TreinoModelSerializer(serializers.ModelSerializer):
     usuario = serializers.StringRelatedField(read_only=True)
     
@@ -15,6 +14,17 @@ class TreinoModelSerializer(serializers.ModelSerializer):
         validated_data['usuario'] = self.context['request'].user
         validate = super().create(validated_data)
         return validate
+    
+    def to_internal_value(self, data):
+        ret  = super().to_internal_value(data)
+        user = self.context['request'].user
+        treino = ret.get('treino_nome',None)
+        treino_exist = TreinoModel.objects.filter(usuario=user,treino_nome=treino).exists()
+        if treino_exist:
+           raise ValidationError({'treino_nome':_(f'Treino existente {treino}.')})
+        if treino == None:
+            raise ValidationError({'treino_nome':_("Este campo é obrigatório.")})
+        return ret
 
 
 class VideosSerializer(serializers.ModelSerializer):

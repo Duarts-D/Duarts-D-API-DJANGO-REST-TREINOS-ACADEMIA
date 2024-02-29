@@ -93,7 +93,4 @@ class TreinosCompartilhadosModel(models.Model):
     class Meta:
         verbose_name = _('Treino Compartilhado')
         verbose_name_plural = _('Treinos compartilhados')
-
-    # def get_absolute_url(self):
-    #     return reverse("model_detail", kwargs={"slug": self.slug})
     

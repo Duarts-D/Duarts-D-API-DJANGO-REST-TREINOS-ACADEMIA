@@ -5,15 +5,22 @@ from rest_framework.status import (HTTP_405_METHOD_NOT_ALLOWED,HTTP_400_BAD_REQU
 from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
 from django.urls import reverse
 from collections import OrderedDict
+from apps.academia.models import TreinoVideosmodel
 
-class FixtureTreinoVideos(GeradoresBaseMixin):
+
+class TreinoVideosTextMixin(GeradoresBaseMixin):
     def criarTreinosVideos(self,usuario):
-        """Cria um treino e um treino-video vinculado ao usuario"""
+        """
+        -> Cria um treino e um treino-video vinculado ao usuario.
+        
+        :return: instacia de  TreinoModel e TreinoVideoModel criada.
+        """
         treino = self.criar_treino(usuario=usuario)
         treino_video = self.criar_treino_videos(usuario=usuario,treino=treino)
         return treino , treino_video
+    
 
-class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestCase):
+class TreinoVideosCUDViewsetTest(TreinoVideosTextMixin,GeradoresBaseMixin,APITestCase):
     """ Testes da viewset TreinoVideosCUDViewSet"""
     def setUp(self):
         self.username, self.usuario = self.criar_usuario_logout_logar()
@@ -237,3 +244,21 @@ class TreinoVideosCUDViewsetTest(FixtureTreinoVideos,GeradoresBaseMixin,APITestC
         
         self.assertEqual(resposta_post_nao_publicado.status_code,HTTP_400_BAD_REQUEST)
     
+    def test_treino_videos_cud_viewset_view_patch_limpar_slug_compartilhado_sempre_que_houver_uma_atualizacao(self):
+        videos = self.criar_videos_multiplicos(qtd=2)
+        lista_id_videos = [videos.id for videos in videos]
+        dados = {'videos':lista_id_videos}
+        _ , treino_video = self.criarTreinosVideos(self.usuario)
+        treino_video.slug_compartilhado = 'slug_fields_'
+        treino_video.save()
+
+        url = f'{self.url}{treino_video.id}/'
+        resposta = self.client.patch(url,data=dados)
+        
+        self.assertEqual(resposta.status_code,HTTP_200_OK)
+        # Apos a atualizacao o slug deve ficar em branco 
+        treino_video_apos_atualizacao = TreinoVideosmodel.objects.get(id=treino_video.id)
+        esperado = ''
+        self.assertEqual(treino_video_apos_atualizacao.slug_compartilhado , esperado)
+
+

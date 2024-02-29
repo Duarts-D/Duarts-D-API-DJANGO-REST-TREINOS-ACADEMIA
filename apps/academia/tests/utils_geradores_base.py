@@ -98,7 +98,7 @@ class GeradoresBaseMixin(CadastroMixin):
         """
         lista = []
         for _ in range(qtd):
-            lista.append(self.criar_video())
+            lista.append(self.criar_video(publicado=True))
         return lista
 
     def criar_usuario_logout_logar(self,
@@ -159,7 +159,7 @@ class GeradoresBaseMixin(CadastroMixin):
         if not isinstance(videos,list):
             raise ValueError('Videos deve ser uma "lista" de instancia de VideosModel.')
         if not videos:
-            video = self.criar_video()
+            video = self.criar_video(publicado=True)
             videos = [video,]
         else:
             for video in videos:

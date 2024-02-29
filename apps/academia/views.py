@@ -81,10 +81,11 @@ class TreinoVideosCUDViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
-        
         reposta_serializer = serializers.TreinoVideosSerializer(self.get_object())
         return Response(reposta_serializer.data)
 
+    def perform_update(self, serializer):
+        serializer.save(slug_compartilhado='')
 
 class TreinoCompartilhadoCreate(CreateAPIView):
     serializer_class = serializers.TreinoCompartilhadoSerializerCreate
@@ -124,8 +125,8 @@ class TreinoCompartilhadoCreate(CreateAPIView):
         # salvando o slug na instancia copiada
         treino.slug_compartilhado = slug
         treino.save()
-
-        return slug #treino_compartilhado.get_absolute_url
+        
+        return slug
 
 class TreinoCompartilhadoRetrieve(RetrieveAPIView):
     queryset = TreinosCompartilhadosModel.objects.prefetch_related('videos','videos__equipamento','videos__grupo_muscular')

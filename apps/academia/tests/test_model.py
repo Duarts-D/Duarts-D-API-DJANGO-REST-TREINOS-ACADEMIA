@@ -1,11 +1,11 @@
 from django.test import TestCase
 from apps.academia.models import (VideoModel,GrupoMuscularModel,EquipamentoModel,
-                                  TreinoModel,TreinoVideosmodel)
-from django.contrib.auth.models import User
+                                  TreinoModel,TreinoVideosmodel,TreinosCompartilhadosModel)
 from apps.usuarios.tests.test_cadastro_base import CadastroMixin
 from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
 from pytest import raises
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 def criar_grupo_e_equipamento():
     grupo_muscular = GrupoMuscularModel.objects.create(grupo_muscular='Grupo teste')
@@ -152,3 +152,54 @@ class TreinoVideosModelTest(GeradoresBaseMixin,CadastroMixin,TestCase):
         msg_erro = str(error_msg.value)
         msg_esperada = 'UNIQUE constraint failed:'
         self.assertIn(msg_esperada, msg_erro)
+
+class TreinoCompartilhadoModelTest(GeradoresBaseMixin,CadastroMixin,TestCase):
+    def test_treinocompartilhado_model_video_recebe_manytomanyfield_de_videos_model(self):
+        quantidade = 5
+        videos = self.criar_videos_multiplicos(qtd=quantidade)
+
+        resposta = TreinosCompartilhadosModel.objects.create()
+        resposta.videos.set(videos)
+        resposta.save()
+
+        resultado = resposta.videos.all()
+        # Resposta 
+        self.assertEqual(resultado.count(),quantidade)
+        self.assertEqual(videos, list(resultado))
+        for video in resultado:
+            self.assertIsInstance(video,VideoModel)
+
+    def test_treinocompartilhado_model_treino_tamanho_maximo_e_40_caracteristico(self):
+        nome = 'a' * 41
+        resultado = TreinosCompartilhadosModel.objects.create(treino=nome)
+        with raises(ValidationError):
+            resultado.full_clean()
+
+    def test_treinocompartilhado_model_treino_tamanho_minimo_e_4_caracteristico(self):
+        nome = 'a' * 3
+        resultado = TreinosCompartilhadosModel.objects.create(treino=nome)
+        with raises(ValidationError):
+            resultado.full_clean()
+
+    def test_treinocompartilhado_model_slug_e_unico(self):
+        slug = 'Treino'
+        TreinosCompartilhadosModel.objects.create(slug=slug)
+        with raises(IntegrityError) as error_msg:
+            TreinosCompartilhadosModel.objects.create(slug=slug).full_clean()
+
+        msg_erro = str(error_msg.value)
+        msg_esperada = 'UNIQUE constraint failed:'
+        self.assertIn(msg_esperada, msg_erro)
+
+    def test_treinocompartilhado_model_slug_blank(self):
+        treino_compart = TreinosCompartilhadosModel.objects.create(
+                                                treino='treino',
+                                                )
+        treino_compart.save()
+        self.assertEqual(treino_compart.slug,'')
+    
+    def test_treinocompartilhado_model_slug_tamanho_maximo_e_200_caracteristico(self):
+        nome = 'a' * 201
+        resultado = TreinosCompartilhadosModel.objects.create(slug=nome)
+        with raises(ValidationError):
+            resultado.full_clean()

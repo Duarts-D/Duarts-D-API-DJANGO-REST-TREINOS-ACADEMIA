@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
+from django.urls import reverse
+from apps.academia.validators.validator import validade_str_minimo_length
 
 class VideoManage(models.Manager):
     def get_publicado(self):
@@ -71,6 +73,7 @@ class TreinoVideosmodel(models.Model):
     treino = models.ForeignKey(TreinoModel,on_delete=models.CASCADE)
     videos = models.ManyToManyField(VideoModel)
     ordem = models.CharField(max_length=200,default=None,null=True,blank=True)
+    slug_compartilhado = models.SlugField(max_length=200,blank=True)
 
     def __str__(self):
         return str(self.treino)
@@ -79,4 +82,18 @@ class TreinoVideosmodel(models.Model):
         verbose_name = _('Treino Video')
         verbose_name_plural = _('Treinos Videos')
         unique_together = ['usuario','treino']
+
+
+class TreinosCompartilhadosModel(models.Model):
+    treino = models.CharField(max_length=40,verbose_name=_('Treino'),blank=False,validators=[validade_str_minimo_length])
+    videos = models.ManyToManyField(VideoModel)
+    ordem = models.CharField(max_length=200,default=None,null=True,blank=True)
+    slug = models.SlugField(unique=True,blank=True,max_length=200)
+
+    class Meta:
+        verbose_name = _('Treino Compartilhado')
+        verbose_name_plural = _('Treinos compartilhados')
+
+    # def get_absolute_url(self):
+    #     return reverse("model_detail", kwargs={"slug": self.slug})
     

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (VideoModel,GrupoMuscularModel,EquipamentoModel,
-                    TreinoModel, TreinoVideosmodel)
+                    TreinoModel, TreinoVideosmodel,TreinosCompartilhadosModel)
 
 
 
@@ -32,4 +32,8 @@ class TreinoModelAdmin(admin.ModelAdmin):
 class TreinoVideoModelAdmin(admin.ModelAdmin):
     list_display = ['id','usuario','treino']
     list_per_page = LIST_PAGE
-    
+
+@admin.register(TreinosCompartilhadosModel)
+class TreinoCompartilhadoAdmin(admin.ModelAdmin):
+    list_display = ['id','treino','slug']
+    list_per_page = LIST_PAGE

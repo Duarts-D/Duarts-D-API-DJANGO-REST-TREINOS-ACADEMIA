@@ -29,9 +29,9 @@ router.register('treinos',view_academia.TreinoCRUDViewset,basename='treino-lista
 router.register('videos-treinos-lista',view_academia.TreinoVideoslistaViewSet,basename='treino-videos-listas')
 router.register('videos-treinos',view_academia.TreinoVideosCUDViewSet,basename='treino-videos')
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(router.urls)),
+    path('',include('apps.academia.urls')),
 ] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
 

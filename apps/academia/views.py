@@ -1,15 +1,19 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .serializer import TreinoModelSerializer,TreinoVideosSerializer,TreinoVideosSerializerPost
-from .models import TreinoModel,TreinoVideosmodel,VideoModel
+from apps.academia import serializers
+from .models import TreinoModel,TreinoVideosmodel,VideoModel,TreinosCompartilhadosModel
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import BasicAuthentication,SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED,HTTP_404_NOT_FOUND,HTTP_400_BAD_REQUEST
+from rest_framework import viewsets
+from rest_framework.generics import CreateAPIView,RetrieveAPIView
+from apps.academia.utils import criar_slug
+
 
 class TreinoCRUDViewset(viewsets.ModelViewSet):
     queryset = TreinoModel.objects.all()
-    serializer_class = TreinoModelSerializer
+    serializer_class = serializers.TreinoModelSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [BasicAuthentication,SessionAuthentication]
     http_method_names = ['get','post','patch','delete']
@@ -24,7 +28,7 @@ class TreinoCRUDViewset(viewsets.ModelViewSet):
 
 class TreinoVideoslistaViewSet(viewsets.ModelViewSet):
     queryset = TreinoVideosmodel.objects.prefetch_related('videos','videos__equipamento','videos__grupo_muscular')
-    serializer_class = TreinoVideosSerializer
+    serializer_class = serializers.TreinoVideosSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes =[BasicAuthentication,SessionAuthentication]
     http_method_names = ['get',]
@@ -37,7 +41,7 @@ class TreinoVideoslistaViewSet(viewsets.ModelViewSet):
         
 class TreinoVideosCUDViewSet(viewsets.ModelViewSet):
     queryset = TreinoVideosmodel.objects.all()
-    serializer_class = TreinoVideosSerializerPost
+    serializer_class = serializers.TreinoVideosSerializerPost
     permission_classes = [IsAuthenticated]
     authentication_classes =[BasicAuthentication,SessionAuthentication]
     http_method_names = ['post','patch','delete']
@@ -55,7 +59,7 @@ class TreinoVideosCUDViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors,status=status)
         
         save = self.perform_create(serializer)
-        reposta_serializer = TreinoVideosSerializer(save)
+        reposta_serializer = serializers.TreinoVideosSerializer(save)
         headers = self.get_success_headers(reposta_serializer.data)
         return Response(reposta_serializer.data, status=HTTP_201_CREATED, headers=headers)
 
@@ -78,5 +82,54 @@ class TreinoVideosCUDViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
         
-        reposta_serializer = TreinoVideosSerializer(self.get_object())
+        reposta_serializer = serializers.TreinoVideosSerializer(self.get_object())
         return Response(reposta_serializer.data)
+
+
+class TreinoCompartilhadoCreate(CreateAPIView):
+    serializer_class = serializers.TreinoCompartilhadoSerializerCreate
+    permission_classes = [IsAuthenticated]
+    authentication_classes =[BasicAuthentication,SessionAuthentication]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        treino_url_compartilhada = serializer.validated_data['treino'].slug_compartilhado
+        headers = self.get_success_headers(serializer)
+        # Retorna se ja tiver slug criada
+        if treino_url_compartilhada:
+            return Response({'url':treino_url_compartilhada}, status=HTTP_201_CREATED, headers=headers)
+        else:
+            treino_url_compartilhada = self.perform_create(serializer)
+
+        return Response({'url':treino_url_compartilhada},status=HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self,serializer):
+        # salvando o model compartilhado
+        treino = serializer.validated_data['treino']
+        treino_str = str(treino)
+        ordem = treino.ordem
+        slug = criar_slug(treino_str)
+        videos = treino.videos.all()
+        
+        treino_compartilhado , criar = TreinosCompartilhadosModel.objects.get_or_create(treino=treino_str,
+                                                                       ordem=ordem,
+                                                                       )
+        if criar:
+            treino_compartilhado.videos.set(videos)
+            treino_compartilhado.slug = slug
+            treino_compartilhado.save()
+
+        # salvando o slug na instancia copiada
+        treino.slug_compartilhado = slug
+        treino.save()
+
+        return slug #treino_compartilhado.get_absolute_url
+
+class TreinoCompartilhadoRetrieve(RetrieveAPIView):
+    queryset = TreinosCompartilhadosModel.objects.prefetch_related('videos','videos__equipamento','videos__grupo_muscular')
+    serializer_class = serializers.TreinoCompartilhadoSerializerRetrieve
+    permission_classes = []
+    authentication_classes =[]
+    lookup_field = 'slug'

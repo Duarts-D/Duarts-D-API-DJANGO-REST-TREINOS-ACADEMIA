@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.academia.models import TreinoModel,TreinoVideosmodel,VideoModel
+from apps.academia.models import TreinoModel,TreinoVideosmodel,VideoModel,TreinosCompartilhadosModel
 from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import ValidationError
 
@@ -56,3 +56,23 @@ class TreinoVideosSerializerPost(serializers.ModelSerializer):
         if user.pk != value.usuario.pk:
             raise ValidationError(_(f'Pk inválido "{value.pk}" - objeto não existe.'))
         return value
+    
+class TreinoCompartilhadoSerializerCreate(serializers.Serializer):
+    treino = serializers.PrimaryKeyRelatedField(queryset=TreinoVideosmodel.objects.all())#read_only=True
+    class Meta:
+        fields = ['treino',]
+
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
+        treino_model = value['treino']
+        user = self.context['request'].user
+        if not treino_model.usuario == user:
+            raise ValidationError({'treino':_(f'Pk inválido "{treino_model.id}" - objeto não existe.')})
+        return value
+    
+class TreinoCompartilhadoSerializerRetrieve(serializers.ModelSerializer):
+    videos = VideosSerializer(many=True,read_only=True)
+    class Meta:
+        model = TreinosCompartilhadosModel
+        fields = ['id','treino','videos','ordem','slug']
+

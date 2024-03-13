@@ -7,9 +7,12 @@ from rest_framework.authentication import BasicAuthentication,SessionAuthenticat
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED,HTTP_404_NOT_FOUND,HTTP_400_BAD_REQUEST
 from rest_framework import viewsets
-from rest_framework.generics import CreateAPIView,RetrieveAPIView
+from rest_framework.generics import CreateAPIView,RetrieveAPIView,GenericAPIView
 from apps.academia.utils import criar_slug
+from django.db.utils import IntegrityError
+from django.db import transaction
 
+QTD_TREINO_REPETIDO = 5
 
 class TreinoCRUDViewset(viewsets.ModelViewSet):
     queryset = TreinoModel.objects.all()
@@ -134,3 +137,39 @@ class TreinoCompartilhadoRetrieve(RetrieveAPIView):
     permission_classes = []
     authentication_classes =[]
     lookup_field = 'slug'
+
+class TreinoCompartilhadoAdd(CreateAPIView):
+    serializer_class = serializers.TreinoCompartilhadoSerializerAdd
+    permission_classes = [IsAuthenticated]
+    authentication_classes =[BasicAuthentication,SessionAuthentication]
+
+    def create(self, request, *args, **kwargs):
+        super().create(request, *args, **kwargs)
+        return Response('Sucesso',status=HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        usuario = self.request.user
+        treino_compartilhado = serializer.validated_data['slug_compartilhado']
+        i = 0
+        while True:
+            try:
+                with transaction.atomic():
+                    treino = TreinoModel.objects.create(
+                        usuario=usuario,
+                        treino_nome=('_'*i) + treino_compartilhado.treino + ('_'*i)
+                        )
+            except IntegrityError:
+                i += 1 
+                if i == QTD_TREINO_REPETIDO :
+                    raise IntegrityError('Limite atigido, favor apague treinos com'
+                                         f' nome que contem {treino_compartilhado.treino}.')
+            else:
+                break
+        criar_treino_videos = TreinoVideosmodel.objects.create(
+            usuario = usuario,
+            treino = treino,
+            ordem = treino_compartilhado.ordem,
+            slug_compartilhado = treino_compartilhado.slug
+        )
+        criar_treino_videos.videos.set(treino_compartilhado.videos.all())
+        criar_treino_videos.save()

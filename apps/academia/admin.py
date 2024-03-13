@@ -37,3 +37,9 @@ class TreinoVideoModelAdmin(admin.ModelAdmin):
 class TreinoCompartilhadoAdmin(admin.ModelAdmin):
     list_display = ['id','treino','slug']
     list_per_page = LIST_PAGE
+    list_filter =(('videos__publicado',admin.BooleanFieldListFilter),)
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "videos":
+            kwargs["queryset"] = VideoModel.objects.filter(publicado=True)
+        return super().formfield_for_manytomany(db_field, request, **kwargs) 

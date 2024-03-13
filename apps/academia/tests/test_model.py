@@ -2,7 +2,7 @@ from django.test import TestCase
 from apps.academia.models import (VideoModel,GrupoMuscularModel,EquipamentoModel,
                                   TreinoModel,TreinoVideosmodel,TreinosCompartilhadosModel)
 from apps.usuarios.tests.test_cadastro_base import CadastroMixin
-from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
+from apps.academia.tests._utils_geradores_base import GeradoresBaseMixin
 from pytest import raises
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError

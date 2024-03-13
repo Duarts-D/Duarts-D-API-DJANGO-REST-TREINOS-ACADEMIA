@@ -86,3 +86,24 @@ class TreinoCompartilhadoSerializerRetrieve(serializers.ModelSerializer):
         model = TreinosCompartilhadosModel
         fields = ['id','treino','videos','ordem','slug']
 
+class TreinoCompartilhadoSerializerAdd(serializers.Serializer):
+    slug_compartilhado = serializers.SlugRelatedField(
+        queryset=TreinosCompartilhadosModel.objects.all(),
+        slug_field='slug'
+        )
+    
+    class Meta:
+        fields = ['slug_compartilhado',]
+
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+        usuario = self.context['request'].user
+        treino_compartilhado = ret['slug_compartilhado']
+        treino_videos = TreinoVideosmodel.objects.filter(
+            usuario=usuario,
+            slug_compartilhado = treino_compartilhado.slug
+            ).exists()
+        
+        if treino_videos:
+            raise ValidationError({'slug_compartilhado':'Treino adicionado.'})
+        return ret

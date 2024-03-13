@@ -21,3 +21,7 @@ class AcademiaUrlsTeste(APITestCase):
     def test_treinocompartilhado_retrieve_url(self):
         url = reverse('compartilhar-retrieve',kwargs={'slug':1})
         self.assertEqual(url,'/c-retrieve/1/')
+
+    def test_treinocomapartilhado_add_url(self):
+        url = reverse('compartilhar-add')
+        self.assertEqual(url, '/c-add/')

@@ -94,3 +94,5 @@ class TreinosCompartilhadosModel(models.Model):
         verbose_name = _('Treino Compartilhado')
         verbose_name_plural = _('Treinos compartilhados')
     
+    def __str__(self):
+        return f'{self.treino}-compartilhado'

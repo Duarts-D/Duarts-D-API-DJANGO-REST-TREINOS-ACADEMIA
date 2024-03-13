@@ -1,8 +1,9 @@
 from rest_framework.test import APITestCase
 from apps.academia import serializers
-from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
+from apps.academia.tests._utils_geradores_base import GeradoresBaseMixin
 from apps.academia  import models
-from rest_framework.relations import StringRelatedField,PrimaryKeyRelatedField
+from rest_framework.relations import StringRelatedField,PrimaryKeyRelatedField,SlugRelatedField
+from pytest import mark
 
 
 class TreinoModelSeriliazerTest(APITestCase):
@@ -114,3 +115,26 @@ class TreinoCompartilhadoSerializerCreate(GeradoresBaseMixin,APITestCase):
         campos = set(serializer.fields.keys())
         campos_necessario = {'id', 'treino', 'videos', 'ordem','slug'}
         self.assertEqual(campos,campos_necessario)
+
+class TestTreinoCompartilhadoSerialzierAdd():
+    def test_treinocompartilhado_add_serializer_campo_slug_compartilhado_e_slugfield(self):
+        serializer = serializers.TreinoCompartilhadoSerializerAdd()
+        esperado = SlugRelatedField
+        resultado = serializer.fields['slug_compartilhado']
+        assert isinstance(resultado,esperado)
+    
+    @mark.django_db
+    def test_treinocompartilhado_add_serializer_parametro_do_slug_compartilhado_slug_field_e_o_campo_do_model_slug_de_treino_compartilhado(self,treino_compartilhado,serializer_add_compartilhado):
+        campo = serializer_add_compartilhado.fields['slug_compartilhado']
+        resultado_slug = campo.slug_field
+        # O campo da query set para utilizar como filtro do slugfield
+        assert resultado_slug == 'slug'
+        # O queryset utilizado para o slugfield
+        resultado_queryset = campo.queryset
+        assert isinstance(resultado_queryset[0], models.TreinosCompartilhadosModel) 
+
+    def test_treinocompartilhado_add_serializer_campos(self,serializer_add_compartilhado):
+        resultado = set(serializer_add_compartilhado.fields.keys())
+        assert len(resultado) == 1
+        assert 'slug_compartilhado' in resultado
+    

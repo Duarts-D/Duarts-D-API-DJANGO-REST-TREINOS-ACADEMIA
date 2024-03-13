@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from rest_framework.status import (HTTP_405_METHOD_NOT_ALLOWED,HTTP_201_CREATED)
-from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
+from apps.academia.tests._utils_geradores_base import GeradoresBaseMixin
 from django.urls import reverse
 from apps.academia.models import TreinoVideosmodel,TreinosCompartilhadosModel
 

@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase
 from rest_framework.status import (HTTP_405_METHOD_NOT_ALLOWED,HTTP_400_BAD_REQUEST,
                                    HTTP_201_CREATED,HTTP_200_OK,HTTP_204_NO_CONTENT,
                                    HTTP_404_NOT_FOUND)
-from apps.academia.tests.utils_geradores_base import GeradoresBaseMixin
+from apps.academia.tests._utils_geradores_base import GeradoresBaseMixin
 from django.urls import reverse
 
 

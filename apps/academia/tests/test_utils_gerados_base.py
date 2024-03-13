@@ -1,7 +1,8 @@
-from django.test import TestCase,SimpleTestCase
+from django.test import TestCase
 from apps.academia.models import (EquipamentoModel,GrupoMuscularModel,VideoModel,
-                                  TreinoModel,TreinoVideosmodel)
-from utils_geradores_base import GeradoresBaseMixin
+                                  TreinoModel,TreinoVideosmodel,TreinosCompartilhadosModel,
+                                  )
+from apps.academia.tests._utils_geradores_base import GeradoresBaseMixin
 from django.contrib.auth.models import User
 from django.urls import reverse
 from pytest import raises
@@ -54,7 +55,6 @@ class UtilsGeradosBaseTest(TestCase):
         # model GrupoMuscularModel
         self.assertIsInstance(video.grupo_muscular,GrupoMuscularModel)
         
-
     def test_geradores_base_criar_video_com_parametro_retorna_query_model(self):
         # Testa a funcao com parametro passado
         nome = 'Video Teste'
@@ -94,7 +94,6 @@ class UtilsGeradosBaseTest(TestCase):
         self.assertIsInstance(video.grupo_muscular,GrupoMuscularModel)
         self.assertEqual(video.grupo_muscular.grupo_muscular,grupo_muscular)
         
-
     def test_geradores_base_criar_treino_sem_parametro_criar_usuario_e_definir_padrao_nome_treino(self):
         # Testa a funcao com parametro padrao criar usuario
         
@@ -135,7 +134,6 @@ class UtilsGeradosBaseTest(TestCase):
 
         self.assertEqual(usuario_treino,nome_usuario)
         
-
     def test_geradores_base_criar_treinos_multiplicos_passando_quantideade_5_e_usuario_retornando_lista_de_instancia_treinoModel(self):
         #Testa a funcao retorna a quantidade 5 de Treinomodel
         usuario = self.usuario
@@ -257,6 +255,34 @@ class UtilsGeradosBaseTest(TestCase):
         esperando_msg = ('Video deve ser uma "instancia de VideoModel"')
         self.assertEqual(str(raise_error_msg.value),esperando_msg)
 
+    def test_criar_treino_compartilhado_default(self):
+        esperado = 'Treino'
+        resposta = self.gerador.criar_treino_compartilhado()
+        assert esperado == resposta.treino
+
+    def test_criar_treino_compratilhado_return_instancia_treinocompartilhadomodel(self):
+        esperado_model = TreinosCompartilhadosModel
+        resposta = self.gerador.criar_treino_compartilhado()
+        assert isinstance(resposta,esperado_model)
+
+    def test_criar_treino_compartilhado_param_treino(self):
+        esperado = 'Treinos'
+        resposta = self.gerador.criar_treino_compartilhado(treino=esperado)
+        assert resposta.treino == esperado
+
+    def test_url_retrieve_defaul(self):
+        url = 'compartilhar-retrieve'
+        esperado = '/c-retrieve/abc/'
+        resposta = self.gerador.url_retrieve_slug(url=url)
+        assert resposta == esperado
+
+    def test_url_retrieve_retorna_url_com_slug(self):
+        url = 'compartilhar-retrieve'
+        slug = 'slug_compartilhado'
+        esperado = f'/c-retrieve/{slug}/'
+        resposta = self.gerador.url_retrieve_slug(url=url,slug=slug)
+        assert resposta == esperado
+
 class UtilsGeradosBaseClientTest(GeradoresBaseMixin,TestCase):
     def test_geradores_base_criar_logout_logar_sem_parametros_esta_criando_usuario_e_logando(self):
         # Testa se esta criando usuario corretamente e esta logando
@@ -275,3 +301,4 @@ class UtilsGeradosBaseClientTest(GeradoresBaseMixin,TestCase):
         self.assertEqual(resposta.status_code,status)
         self.assertIsInstance(username,str)
         
+

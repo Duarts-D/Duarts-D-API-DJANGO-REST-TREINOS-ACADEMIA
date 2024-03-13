@@ -1,7 +1,10 @@
 from apps.academia.models import (VideoModel,EquipamentoModel,GrupoMuscularModel,
-                                  TreinoModel,TreinoVideosmodel)
+                                  TreinoModel,TreinoVideosmodel,TreinosCompartilhadosModel)
 from apps.usuarios.tests.test_cadastro_base import CadastroMixin
 from django.contrib.auth.models import User
+from apps.academia.utils import criar_slug
+from django.urls import reverse
+
 
 class GeradoresBaseMixin(CadastroMixin):
     """
@@ -170,3 +173,29 @@ class GeradoresBaseMixin(CadastroMixin):
         treino_video.save()
         
         return treino_video
+    
+    def criar_treino_compartilhado(self,treino='Treino'):
+        """
+        -> Criar instancia de TreinoCompartilhadoModel.
+
+        :return: instancia de TreinoComaprtilhadaModel criada.
+        """
+        treino = TreinosCompartilhadosModel.objects.create(
+            treino = treino,
+            ordem='1,2,3',
+            slug=criar_slug(treino)
+        )
+        return treino
+    
+    def url_retrieve_slug(self,url:str,slug='abc'):
+        """
+        -> Cria uma url com slug.
+
+        :return: url com slug
+        """
+        url = reverse(str(url),kwargs={'slug':slug})
+        return url
+    
+    def url_retrieve(self,url:str,slug=None):
+        url = reverse(str(url))
+        return url

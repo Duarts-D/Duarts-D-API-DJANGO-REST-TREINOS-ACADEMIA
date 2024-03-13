@@ -1,76 +1,19 @@
 from rest_framework.test import APITestCase
 from rest_framework.status import (HTTP_405_METHOD_NOT_ALLOWED,HTTP_200_OK,HTTP_404_NOT_FOUND)
-from django.urls import resolve,reverse
+from django.urls import resolve
 from apps.academia.models import TreinosCompartilhadosModel
-from apps.academia.utils import criar_slug
 from apps.academia import views
 from apps.academia.serializers import TreinoCompartilhadoSerializerRetrieve
 from apps.academia.tests.test_utils_gerados_base import GeradoresBaseMixin
 from parameterized import parameterized
-from pytest import mark
 
-@parameterized.expand([('abc','/c-retrieve/abc/'),
-                       ('None','/c-retrieve/None/')
-                       ])
-def test_url_retrieve(slug,esperado):
-    resposta = TreinoCompartilhadoTestMixin()
-    resposta = resposta.url_retrieve(slug=slug)
-    assert resposta == esperado
 
-def test_url_retrieve_default():
-    esperado = '/c-retrieve/abc/'
-    resposta = TreinoCompartilhadoTestMixin()
-    resposta = resposta.url_retrieve()
-    assert resposta == esperado
+class TreinoCompartilhadoRetrieveTest(GeradoresBaseMixin,APITestCase):
+    def setUp(self) -> None:
+        self.url = 'compartilhar-retrieve'
 
-@mark.django_db
-def test_criar_treino_compartilhado_default():
-    esperado = 'Treino'
-    resposta = TreinoCompartilhadoTestMixin()
-    resposta = resposta.criar_treino_compartilhado()
-    assert esperado == resposta.treino
-
-@mark.django_db
-def test_criar_treino_compratilhado_return_instancia_treinocompartilhadomodel():
-    esperado_model = TreinosCompartilhadosModel
-    resposta = TreinoCompartilhadoTestMixin()
-    resposta = resposta.criar_treino_compartilhado()
-    assert isinstance(resposta,esperado_model)
-
-@mark.django_db
-def test_criar_treino_compartilhado_param_treino():
-    esperado = 'Treinos'
-    resposta = TreinoCompartilhadoTestMixin()
-    resposta = resposta.criar_treino_compartilhado(treino=esperado)
-    assert resposta.treino == esperado
-
-class TreinoCompartilhadoTestMixin:
-    def url_retrieve(self,slug='abc'):
-        """
-        -> Criar url para view treinoCompartilhadoRetrieve
-
-        :return: url com slug
-        """
-        url = reverse('compartilhar-retrieve',kwargs={'slug':slug})
-        return url
-    
-    def criar_treino_compartilhado(self,treino='Treino'):
-        """
-        -> Criar instancia de TreinoCompartilhadoModel.
-
-        :return: instancia de TreinoComaprtilhadaModel criada.
-        """
-        treino = TreinosCompartilhadosModel.objects.create(
-            treino = treino,
-            ordem='1,2,3',
-            slug=criar_slug(treino)
-        )
-        return treino
-
-class TreinoCompartilhadoRetrieveTest(GeradoresBaseMixin,TreinoCompartilhadoTestMixin,APITestCase):
-    
     def test_treinocompartilhado_retrieve_view_url_correta(self):
-        resultado = resolve(self.url_retrieve())
+        resultado = resolve(self.url_retrieve_slug(url=self.url))
         self.assertIs(resultado.func.view_class,views.TreinoCompartilhadoRetrieve)
 
     def test_treinocompartilhado_retrieve_view_utiliza_query_treino_compartilhado(self):
@@ -107,36 +50,36 @@ class TreinoCompartilhadoRetrieveTest(GeradoresBaseMixin,TreinoCompartilhadoTest
 
     def test_treinocompartilhado_retrieve_get_retorna_status_200(self):
         treino_c = self.criar_treino_compartilhado()
-        url = self.url_retrieve(slug=treino_c.slug)
+        url = self.url_retrieve_slug(url=self.url,slug=treino_c.slug)
         
         resposta = self.client.get(url)
         self.assertEqual(resposta.status_code,HTTP_200_OK) 
 
     def test_treinocompartilhado_retrieve_get_retorna_status_404(self):
-        url = self.url_retrieve()
+        url = self.url_retrieve_slug(url=self.url)
         resposta = self.client.get(url)
         self.assertEqual(resposta.status_code, HTTP_404_NOT_FOUND)
 
     def test_treinocompartilhado_retrieve_post_retorna_status_405(self):
-        url = self.url_retrieve()
+        url = self.url_retrieve_slug(url=self.url,)
     
         resposta = self.client.post(url)
         self.assertEqual(resposta.status_code, HTTP_405_METHOD_NOT_ALLOWED)
     
     def test_treinocompartilhado_retrieve_put_retorna_status_405(self):
-        url = self.url_retrieve()
+        url = self.url_retrieve_slug(url=self.url,)
     
         resposta = self.client.put(url)
         self.assertEqual(resposta.status_code, HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_treinocompartilhado_retrieve_patch_retorna_status_405(self):
-        url = self.url_retrieve()
+        url = self.url_retrieve_slug(url=self.url,)
     
         resposta = self.client.patch(url)
         self.assertEqual(resposta.status_code, HTTP_405_METHOD_NOT_ALLOWED)
     
     def test_treinocompartilhado_retrieve_delete_retorna_status_405(self):
-        url = self.url_retrieve()
+        url = self.url_retrieve_slug(url=self.url,)
         resposta = self.client.delete(url)
         self.assertEqual(resposta.status_code, HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -145,7 +88,7 @@ class TreinoCompartilhadoRetrieveTest(GeradoresBaseMixin,TreinoCompartilhadoTest
     )
     def test_treinocompartilhado_retrieve_retorna_campos_id_treino_videos_ordem_slug(self,campo):
         treino = self.criar_treino_compartilhado()
-        url = self.url_retrieve(treino.slug)
+        url = self.url_retrieve_slug(url=self.url,slug=treino.slug)
         
         resposta = self.client.get(url)
         resposta_data = resposta.data
@@ -160,7 +103,7 @@ class TreinoCompartilhadoRetrieveTest(GeradoresBaseMixin,TreinoCompartilhadoTest
 
         esperados_videos = treino.videos.all()
 
-        url = self.url_retrieve(slug=treino.slug)
+        url = self.url_retrieve_slug(url=self.url,slug=treino.slug)
         resposta = self.client.get(url)
         resposta_data = resposta.data
 
@@ -193,7 +136,7 @@ class TreinoCompartilhadoRetrieveTest(GeradoresBaseMixin,TreinoCompartilhadoTest
 
         esperado_quantidade_campos = 9
 
-        url = self.url_retrieve(slug=treino.slug)
+        url = self.url_retrieve_slug(url=self.url,slug=treino.slug)
         resposta = self.client.get(url)
         resposta_data = resposta.data['videos'][0]
         

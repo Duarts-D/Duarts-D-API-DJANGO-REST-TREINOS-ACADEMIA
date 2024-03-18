@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     #Apps
     'apps.usuarios',
     'apps.academia',
+    # Django-Filter
+    'django_filters'
 ]
 
 MIDDLEWARE = [

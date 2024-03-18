@@ -8,11 +8,16 @@ from random import randint
 from apps.academia import serializers
 
 register(TreinoCompartilhadoFactory)
+register(VideosFactory)
 
 
 @pytest.fixture
 def url_add(geradores):
     return geradores.url_retrieve('compartilhar-add') 
+
+@pytest.fixture
+def url_videos(geradores):
+    return geradores.url_retrieve('videos-list') 
 
 @pytest.fixture
 def treino_compartilhado():
@@ -83,3 +88,9 @@ def criando_5_model_treino_compartilhado_com_requisicao(treino_compartilhado_fac
 def serializer_add_compartilhado():
     serializer = serializers.TreinoCompartilhadoSerializerAdd()
     return serializer
+
+@pytest.fixture
+def cliente_user_videos_get(url_videos,cliente_user,videos_factory):
+    videos_factory.create(publicado=True)
+    resultado = cliente_user.get(url_videos)
+    return resultado

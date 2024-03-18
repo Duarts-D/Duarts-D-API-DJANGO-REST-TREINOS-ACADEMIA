@@ -7,10 +7,13 @@ from rest_framework.authentication import BasicAuthentication,SessionAuthenticat
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED,HTTP_404_NOT_FOUND,HTTP_400_BAD_REQUEST
 from rest_framework import viewsets
-from rest_framework.generics import CreateAPIView,RetrieveAPIView,GenericAPIView
+from rest_framework.generics import CreateAPIView,RetrieveAPIView,ListAPIView
 from apps.academia.utils import criar_slug
 from django.db.utils import IntegrityError
 from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import VideosFilter
+
 
 QTD_TREINO_REPETIDO = 5
 
@@ -90,7 +93,7 @@ class TreinoVideosCUDViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(slug_compartilhado='')
 
-class TreinoCompartilhadoCreate(CreateAPIView):
+class TreinoCompartilhadoViewCreate(CreateAPIView):
     serializer_class = serializers.TreinoCompartilhadoSerializerCreate
     permission_classes = [IsAuthenticated]
     authentication_classes =[BasicAuthentication,SessionAuthentication]
@@ -138,7 +141,7 @@ class TreinoCompartilhadoRetrieve(RetrieveAPIView):
     authentication_classes =[]
     lookup_field = 'slug'
 
-class TreinoCompartilhadoAdd(CreateAPIView):
+class TreinoCompartilhadoAddViewCreate(CreateAPIView):
     serializer_class = serializers.TreinoCompartilhadoSerializerAdd
     permission_classes = [IsAuthenticated]
     authentication_classes =[BasicAuthentication,SessionAuthentication]
@@ -173,3 +176,11 @@ class TreinoCompartilhadoAdd(CreateAPIView):
         )
         criar_treino_videos.videos.set(treino_compartilhado.videos.all())
         criar_treino_videos.save()
+
+class VideosViewList(ListAPIView):
+    queryset = VideoModel.objects.get_publicado()
+    serializer_class = serializers.VideosSerializer
+    authentication_classes = []
+    permission_classes = []
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = VideosFilter

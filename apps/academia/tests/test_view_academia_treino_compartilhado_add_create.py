@@ -3,7 +3,7 @@ from rest_framework.status import (HTTP_405_METHOD_NOT_ALLOWED,HTTP_201_CREATED,
 from apps.academia.tests._utils_geradores_base import GeradoresBaseMixin
 from django.urls import resolve
 from apps.academia import models 
-from apps.academia.views import TreinoCompartilhadoAdd
+from apps.academia.views import TreinoCompartilhadoAddViewCreate
 from apps.academia.serializers import TreinoCompartilhadoSerializerAdd
 from rest_framework.authentication import BasicAuthentication,SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -19,28 +19,28 @@ class TestTreinoCompartilhadoAddViewFunc(GeradoresBaseMixin):
     def test_treino_compartilhado_add_view_func(self):
         # Testando a funcao utilizando na view
         url = 'compartilhar-add'
-        func = TreinoCompartilhadoAdd
+        func = TreinoCompartilhadoAddViewCreate
         resultado = resolve(self.url_retrieve(url=url))
         assert resultado.func.view_class == func
 
     def test_treino_compartilhado_add_serializer_class_e_treino_compartilhado_add_serializer(self):
         # Testando o serializer utilizado
         esperado = TreinoCompartilhadoSerializerAdd
-        resultado = TreinoCompartilhadoAdd().serializer_class
+        resultado = TreinoCompartilhadoAddViewCreate().serializer_class
 
         assert resultado == esperado
 
     def test_treino_compartilhado_add_permission_class(self):
         # Testando as permisao necessaria
         esperado = [IsAuthenticated]
-        resultado = TreinoCompartilhadoAdd().permission_classes
+        resultado = TreinoCompartilhadoAddViewCreate().permission_classes
 
         assert resultado == esperado
 
     def test_treino_compartilhado_add_authentication_classe(self):
         # Testand oas authenticacao necessaria
         esperado = [BasicAuthentication, SessionAuthentication]
-        resultado = TreinoCompartilhadoAdd().authentication_classes
+        resultado = TreinoCompartilhadoAddViewCreate().authentication_classes
 
         assert resultado == esperado
 

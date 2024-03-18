@@ -25,3 +25,7 @@ class AcademiaUrlsTeste(APITestCase):
     def test_treinocomapartilhado_add_url(self):
         url = reverse('compartilhar-add')
         self.assertEqual(url, '/c-add/')
+
+    def test_videosview_list_url(self):
+        url = reverse('videos-list')
+        self.assertEqual(url, '/videos/')

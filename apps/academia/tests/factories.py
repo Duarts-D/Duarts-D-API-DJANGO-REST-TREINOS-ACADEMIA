@@ -27,7 +27,7 @@ class VideosFactory(django.DjangoModelFactory):
     video_id_youtube = fake.name()
     video_url = fake.name()
     informacao = fake.text()
-    imagem = ''
+    # imagem = ''
     video_id_didatico = ''
     grupo_muscular = SubFactory(GrupoMuscularFactory)
     equipamento = SubFactory(EquipamentoFactory)
